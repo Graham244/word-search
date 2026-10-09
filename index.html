@@ -31,6 +31,7 @@ button:hover { background: #0052d6; border-color: #0052d6; }
 button.secondary { background: #ffffff; color: #0061ff; }
 button.secondary:hover { background: #eef4ff; }
 button:disabled { opacity: .45; cursor: default; }
+#btnPlay { font-size: 10px; max-width: 128px; line-height: 1.35; padding: 7px 10px; }
 select {
   padding: 9px 10px; font-size: 14px; border: 2px solid #0061ff; border-radius: 8px;
   background: #ffffff; color: #1e1e1e; outline: none; max-width: 220px;
@@ -122,7 +123,7 @@ footer {
   <h1>Word Search</h1>
   <select id="themeSel" title="Word theme"></select>
   <button id="btnNew" class="secondary">New Puzzle</button>
-  <button id="btnPlay">Play</button>
+  <button id="btnPlay">Play entire game automatically-watch the progress</button>
   <button id="btnReveal" class="secondary">Reveal Secret Phrase</button>
 </header>
 <main>
@@ -140,17 +141,19 @@ footer {
 <footer>&copy; Graham Lamb 2026. All rights reserved. Version 0.1<br>Built by Graham Lamb with assistance from Muse (Meta AI)</footer>
 <script>
 "use strict";
-/* ---- platform gate: Google Chrome only (any device) ---- */
+/* ---- platform gate: Chrome, Edge, Firefox, Safari (any device) ---- */
 (function () {
   const ua = navigator.userAgent || "";
-  const isChrome = /Chrome/i.test(ua) && !/Edg|OPR|SamsungBrowser/i.test(ua) &&
-                   /Google Inc/i.test(navigator.vendor || "");
-  if (isChrome) return;
+  const isEdge = /Edg/i.test(ua);
+  const isFirefox = /Firefox|FxiOS/i.test(ua);
+  const isChrome = (/Chrome|CriOS/i.test(ua) || /Google Inc/i.test(navigator.vendor || "")) && !isEdge;
+  const isSafari = /Safari/i.test(ua) && !/Chrome|Chromium|CriOS/i.test(ua);
+  if (isEdge || isFirefox || isChrome || isSafari) return;
   document.body.innerHTML =
     '<div style="display:flex;min-height:100vh;align-items:center;justify-content:center;' +
     'font-family:system-ui,sans-serif;color:#1e1e1e;padding:24px;text-align:center;">' +
-    '<p style="font-size:17px;line-height:1.6">This game needs the <b>Google Chrome</b> browser.</p></div>';
-  throw new Error("Unsupported platform: Google Chrome required.");
+    '<p style="font-size:17px;line-height:1.6">This game needs <b>Chrome</b>, <b>Edge</b>, <b>Firefox</b> or <b>Safari</b>.</p></div>';
+  throw new Error("Unsupported browser.");
 })();
 /* ================= 10 themes x 100-word pools (3-12 letters) ================= */
 const THEMES = {
