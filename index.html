@@ -137,7 +137,7 @@ footer {
     <div class="hint">Drag across a word in a straight line — or tap a start cell, then an end cell. Or press Find next to any word.</div>
   </aside>
 </main>
-<footer>&copy; Graham Lamb 2026. All rights reserved. Version 0.1<br>Built by Graham Lamb with assistance from Muse (Meta AI)</footer>
+<footer>&copy; Bubbles Ltd. 2026. All rights reserved. Version 0.1<br>Built by Bubbles Ltd. with assistance from Muse (Meta AI)</footer>
 <script>
 "use strict";
 /* ---- platform gate: Chrome, Edge, Firefox, Safari (any device) ---- */
@@ -722,7 +722,11 @@ function findWord(i) {
 /* ---- new puzzle ---- */
 function newPuzzle() {
   theme = $("themeSel").value;
-  const pool = THEMES[theme].filter(w => w.length >= 3 && w.length <= SIZE);
+  const pool = THEMES[theme]
+    .filter(w => w.length >= 3 && w.length <= SIZE)
+    // Drop any word contained inside another word (e.g. CAT inside CATERPILLAR),
+    // so one selection can never match two entries in the word list.
+    .filter((w, _, a) => !a.some(o => o !== w && o.includes(w)));
   // Try each theme phrase until one yields a puzzle whose leftovers fit it exactly once
   let result = null, phrase = "";
   for (const ph of shuffle(PHRASES[theme].slice())) {
