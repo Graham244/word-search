@@ -58,7 +58,7 @@ main {
 .cell.found { background: #d9d9d9; border-color: #bdbdbd; }
 .cell.blocked { background: #e8e8e8; border-color: #d0d0d0; cursor: default; }
 #msg { min-height: 24px; color: #0061ff; font-weight: 600; margin-top: 10px; text-align: center; max-width: 480px; }
-#timer { font-size: 14px; color: #333; margin-top: 4px; text-align: center; font-variant-numeric: tabular-nums; }
+#timer { font-size: 14px; color: #333; font-variant-numeric: tabular-nums; }
 aside {
   width: 260px; border: 2px solid #0061ff; border-radius: 10px;
   padding: 12px; background: #ffffff;
@@ -144,8 +144,8 @@ footer {
   <select id="themeSel" title="Word theme"></select>
   <button id="btnNew" class="secondary">New Puzzle</button>
   <button id="btnPlay">Play</button>
-  <button id="btnReveal" class="secondary">Reveal End Word Phrase</button>
   <button id="btnPrint" class="secondary">Print</button>
+  <div id="timer"></div>
 </header>
 <main>
   <div id="boardCol">
@@ -156,7 +156,6 @@ footer {
     <h3>Words to find</h3>
     <div id="wordList"></div>
     <div id="count"></div>
-    <div id="timer"></div>
     <div class="hint">Drag across a word in a straight line — or tap a start cell, then an end cell. Or press Find next to any word.</div>
   </aside>
 </main>
@@ -897,7 +896,6 @@ $("btnNew").addEventListener("click", newPuzzle);
 $("themeSel").addEventListener("change", newPuzzle);
 $("btnPlay").addEventListener("click", playAll);
 $("btnPrint").addEventListener("click", () => window.print());
-$("btnReveal").addEventListener("click", () => setMsg('End word phrase: "' + secretPhrase + '"'));
 
 /* ---- friends-only password gate ---- */
 const FRIEND_PASSWORD = "friends_of_Graham_Lamb"; // change this to your own password
