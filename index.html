@@ -96,30 +96,45 @@ footer {
   padding: 12px; text-align: center; font-size: 12px; color: #999;
   border-top: 1px solid #eef2f9;
 }
+/* Print: one identical full-page layout on every device — the grid fills the
+   full printable width (cells as large as the page allows) and the word list
+   spreads across the rest of the page. Exactly one page. */
 @media print {
-  @page { size: portrait; margin: 12mm; }
+  @page { size: portrait; margin: 6mm; }
   header, #msg, #timer, .hint, footer, #pwGate { display: none !important; }
-  body { display: block; }
-  main { display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start; gap: 28px; padding: 0; }
-  #grid { --cell: 24px; border: 2px solid #000; }
-  .cell { border: 1px solid #999; font-size: 13px; }
+  html, body { height: 100%; }
+  body { display: block; min-height: 0; }
+  main {
+    display: flex; flex-direction: column; flex-wrap: nowrap;
+    align-items: stretch; justify-content: flex-start; gap: 8px; padding: 0;
+    width: 100%; height: 99%;
+  }
+  #boardCol { width: 100%; flex: none; }
+  #grid {
+    width: 100%; aspect-ratio: 1 / 1;
+    grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(0, 1fr);
+    border: 2px solid #000;
+  }
+  .cell { border: 1px solid #999; font-size: 28px; }
   .cell.anchor, .cell.sel { outline: none; background: #fff; }
   .cell.found { background: #d9d9d9; border-color: #999; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .cell.blocked { background: #fff; border-color: #ccc; }
-  aside { border: none; padding: 0; width: auto; }
-  aside h3 { color: #000; }
-  #wordList { max-height: none; overflow: visible; border: none; column-count: 2; column-gap: 24px; }
-  .wrow { border: none; padding: 2px 4px; font-size: 12px; break-inside: avoid; }
+  aside {
+    border: none; padding: 0; width: 100%;
+    flex: 1; display: flex; flex-direction: column; min-height: 0;
+  }
+  aside h3 { color: #000; text-align: center; margin-bottom: 4px; }
+  #wordList {
+    max-height: none; overflow: visible; border: none;
+    flex: 1; display: grid; grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: minmax(0, 1fr); gap: 2px; min-height: 0;
+  }
+  .wrow {
+    border: none; padding: 1px 4px; font-size: 14px;
+    justify-content: center; break-inside: avoid; align-items: center;
+  }
   .wrow button { display: none !important; }
-  #count { color: #000; }
-}
-/* Narrow print (phone): stack the word list below the grid and enlarge the cells,
-   so the phone does not shrink the whole page to fit the side-by-side layout. */
-@media print and (max-width: 500px) {
-  main { flex-direction: column; gap: 16px; }
-  #grid { --cell: 28px; }
-  aside { width: 100%; }
-  #wordList { column-count: 3; }
+  #count { color: #000; text-align: center; margin-top: 4px; }
 }
 
 @media (max-width: 700px) {
