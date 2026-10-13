@@ -104,7 +104,7 @@ footer {
   #grid { --cell: 24px; border: 2px solid #000; }
   .cell { border: 1px solid #999; font-size: 13px; }
   .cell.anchor, .cell.sel { outline: none; background: #fff; }
-  .cell.found { background: #fff; border-color: #999; }
+  .cell.found { background: #d9d9d9; border-color: #999; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .cell.blocked { background: #fff; border-color: #ccc; }
   aside { border: none; padding: 0; width: auto; }
   aside h3 { color: #000; }
@@ -112,6 +112,14 @@ footer {
   .wrow { border: none; padding: 2px 4px; font-size: 12px; break-inside: avoid; }
   .wrow button { display: none !important; }
   #count { color: #000; }
+}
+/* Narrow print (phone): stack the word list below the grid and enlarge the cells,
+   so the phone does not shrink the whole page to fit the side-by-side layout. */
+@media print and (max-width: 500px) {
+  main { flex-direction: column; gap: 16px; }
+  #grid { --cell: 28px; }
+  aside { width: 100%; }
+  #wordList { column-count: 3; }
 }
 
 @media (max-width: 700px) {
