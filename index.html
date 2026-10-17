@@ -75,6 +75,13 @@ aside h3 { margin: 0 0 8px; color: #0061ff; font-size: 15px; }
 .wrow button { padding: 3px 9px; font-size: 12px; border-width: 1px; }
 #count { font-size: 13px; color: #666; margin-top: 8px; text-align: center; }
 .hint { font-size: 12px; color: #666; margin-top: 8px; text-align: center; max-width: 260px; }
+/* Direction mix inputs (V5.0, on the setup page). */
+.dirMixNote { font-size: 12px; color: #666; margin: 6px 0; text-align: center; }
+.dirMixRow { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+.dirMixRow input { width: 56px; padding: 3px 5px; font-size: 13px; border: 1px solid #dfe7f5; border-radius: 5px; text-align: right; }
+#dirMixTotal { font-size: 12px; color: #666; text-align: center; margin-top: 6px; }
+/* This puzzle's actual direction mix, directly below the status line. */
+#dirMixActual { font-size: 13px; color: #666; text-align: center; min-height: 18px; }
 #pwGate {
   position: fixed; inset: 0; z-index: 50;
   background: rgba(5, 9, 20, 0.96);
@@ -96,27 +103,31 @@ footer {
   padding: 12px; text-align: center; font-size: 12px; color: #999;
   border-top: 1px solid #eef2f9;
 }
-/* ---- V4.0 size picker (title screen) ---- */
-#sizePicker {
+/* ---- V5.0 setup page (overlay): size radios + direction mix + Play Puzzle ---- */
+#setupPage {
   position: fixed; inset: 0; z-index: 40;
   background: rgba(5, 9, 20, 0.96);
-  display: flex; align-items: center; justify-content: center; padding: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px;
 }
-#sizePicker.hidden { display: none; }
-#sizeBox {
+#setupPage.hidden { display: none; }
+#setupFooter { color: #fff; font-size: 12px; text-align: center; margin-top: 12px; }
+#setupBox {
   background: #fff; border: 3px solid #0061ff; border-radius: 12px;
-  padding: 28px; text-align: center; max-width: 380px; width: 90vw;
+  padding: 24px; text-align: center; max-width: 420px; width: 92vw;
+  max-height: 92vh; overflow-y: auto;
 }
-#sizeBox h2 { color: #0061ff; margin: 0 0 6px; letter-spacing: 2px; font-size: 20px; }
-#sizeBox p { font-size: 14px; color: #444; margin: 8px 0 16px; }
-.size-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.size-btn { font-size: 18px; padding: 12px 20px; }
-.size-btn.selected { outline: 3px solid #0061ff; background: #eef4ff; color: #0061ff; }
-/* Phones get 12x12 only, with no size picker and no Size button: the game
-   goes straight into a 12x12 puzzle. */
+#setupBox h2 { color: #0061ff; margin: 0 0 6px; letter-spacing: 2px; font-size: 20px; }
+#setupBox p { font-size: 14px; color: #444; margin: 8px 0; }
+#setupBox h3 { color: #0061ff; margin: 14px 0 4px; font-size: 15px; }
+#setupSizeRow { display: flex; gap: 14px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 10px 0; font-size: 15px; }
+#setupSizeRow label { cursor: pointer; }
+#setupSizeRow input { margin-right: 4px; }
+#setupBox .dirMixRow { max-width: 260px; margin: 0 auto; }
+#btnPlayPuzzle { font-size: 18px; padding: 10px 24px; margin-top: 12px; }
+/* Phones get 12x12 only: the size radios are hidden on phones, but the
+   setup page itself (direction mix) and the Setup button stay available. */
 @media (max-width: 700px) and (pointer: coarse) {
-  .size-btn[data-size="15"], .size-btn[data-size="20"] { display: none; }
-  #btnSize, #sizePicker { display: none !important; }
+  #setupSizeRow { display: none; }
 }
 /* Screen fit (desktop, 20x20 mode only — body.fit20): the whole puzzle —
    the full 20x20 grid plus the full word list — fits on one browser
@@ -165,7 +176,7 @@ footer {
    spreads across the rest of the page. Exactly one page. */
 @media print {
   @page { size: portrait; margin: 6mm; }
-  header, #msg, #timer, .hint, footer, #pwGate, #sizePicker { display: none !important; }
+  header, #msg, #dirMixActual, #timer, .hint, footer, #pwGate, #setupPage { display: none !important; }
   html, body { height: 100%; }
   body { display: block; min-height: 0; }
   main {
@@ -199,7 +210,7 @@ footer {
   }
   .wrow button { display: none !important; }
   #count { color: #000; text-align: center; margin-top: 4px; }
-  /* V4.0 print fix: the on-screen body.fit20 rules (viewport heights,
+  /* V5.0 print fix: the on-screen body.fit20 rules (viewport heights,
      overflow-y:auto + columns on the word list, fixed aside width) have
      higher specificity than the print rules above, so they leaked into
      print and Edge drew scrollbars over the bottom of the word list.
@@ -246,23 +257,37 @@ footer {
     <p id="pwMsg"></p>
   </div>
 </div>
-<div id="sizePicker" class="hidden">
-  <div id="sizeBox">
-    <h2>WORD-SEARCH</h2>
-    <p>Choose your puzzle size.</p>
-    <div class="size-btns">
-      <button class="size-btn" data-size="12">12x12</button>
-      <button class="size-btn" data-size="15">15x15</button>
-      <button class="size-btn" data-size="20">20x20</button>
+<div id="setupPage" class="hidden">
+  <div id="setupBox">
+    <h2>WORD-SEARCH Setup</h2>
+    <p>Choose your puzzle size and direction mix.</p>
+    <div id="setupSizeRow">
+      <span>Puzzle size:</span>
+      <label><input type="radio" name="setupSize" value="12"> 12x12</label>
+      <label><input type="radio" name="setupSize" value="15"> 15x15</label>
+      <label><input type="radio" name="setupSize" value="20"> 20x20</label>
     </div>
+    <h3>Direction mix</h3>
+    <p class="dirMixNote">Type the % of words you want in each direction.</p>
+    <div class="dirMixRow"><span>Right &rarr;</span><input type="number" id="dirPct-right" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Down &darr;</span><input type="number" id="dirPct-down" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Left &larr;</span><input type="number" id="dirPct-left" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Up &uarr;</span><input type="number" id="dirPct-up" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Down-right &#8600;</span><input type="number" id="dirPct-diagDR" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Down-left &#8601;</span><input type="number" id="dirPct-diagDL" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Up-right &#8599;</span><input type="number" id="dirPct-diagUR" min="0" max="100" step="1"></div>
+    <div class="dirMixRow"><span>Up-left &#8598;</span><input type="number" id="dirPct-diagUL" min="0" max="100" step="1"></div>
+    <div id="dirMixTotal"></div>
+    <button id="btnPlayPuzzle">Play Puzzle</button>
   </div>
+  <div id="setupFooter">&copy; 2026 Graham Lamb V5.0, All rights reserved. Developed exclusively with Muse @Meta</div>
 </div>
 <header>
   <h1>Word-Search</h1>
+  <button id="btnSetup" class="secondary">Setup</button>
   <select id="themeSel" title="Word theme"></select>
   <button id="btnNew" class="secondary">New Puzzle</button>
-  <button id="btnSize" class="secondary">Size</button>
-  <button id="btnPlay">Play</button>
+  <button id="btnPlay">Auto Play</button>
   <button id="btnPrint" class="secondary">Print</button>
   <div id="timer"></div>
 </header>
@@ -270,6 +295,7 @@ footer {
   <div id="boardCol">
     <div id="grid"></div>
     <div id="msg"></div>
+    <div id="dirMixActual"></div>
   </div>
   <aside>
     <h3>Words to find</h3>
@@ -278,7 +304,7 @@ footer {
     <div class="hint">Drag across a word in a straight line — or tap a start cell, then an end cell. Or press Find next to any word.</div>
   </aside>
 </main>
-<footer>&copy; 2026 Graham Lamb V4.0, All rights reserved. Developed exclusively with Muse @Meta</footer>
+<footer>&copy; 2026 Graham Lamb V5.0, All rights reserved. Developed exclusively with Muse @Meta</footer>
 <script>
 "use strict";
 /* ---- platform gate: Chrome, Edge, Firefox, Safari (any device) ---- */
@@ -295,7 +321,7 @@ footer {
     '<p style="font-size:17px;line-height:1.6">This game needs <b>Chrome</b>, <b>Edge</b>, <b>Firefox</b> or <b>Safari</b>.</p></div>';
   throw new Error("Unsupported browser.");
 })();
-/* ================= 144 themes x 100-word pools (v4.0 uses 3-10 letters) ================= */
+/* ================= 144 themes x 100-word pools (v5.0 uses 3-10 letters) ================= */
 const THEMES = {
 ANIMALS: "ANT,APE,BAT,BEAR,BEAVER,BEE,BISON,BOAR,BUFFALO,BULL,BUTTERFLY,CAMEL,CAT,CATERPILLAR,CHEETAH,CHIPMUNK,COBRA,COCKATOO,CONDOR,COUGAR,COW,COYOTE,CRAB,CRANE,CROCODILE,CROW,DEER,DOG,DOLPHIN,DONKEY,DOVE,DRAGONFLY,DUCK,EAGLE,ELEPHANT,ELK,FALCON,FERRET,FINCH,FIREFLY,FISH,FLAMINGO,FOX,FROG,GAZELLE,GECKO,GERBIL,GIRAFFE,GOAT,GOOSE,GORILLA,HAMSTER,HARE,HAWK,HEDGEHOG,HERON,HIPPO,HORSE,HYENA,IGUANA,JAGUAR,JELLYFISH,KANGAROO,KOALA,LEOPARD,LION,LIZARD,LLAMA,LOBSTER,LYNX,MAGPIE,MAMMOTH,MANATEE,MEERKAT,MINK,MOLE,MONGOOSE,MONKEY,MOOSE,MOSQUITO,MOUSE,MULE,NEWT,OCTOPUS,OPOSSUM,OSTRICH,OTTER,OWL,OYSTER,PANDA,PANTHER,PARROT,PEACOCK,PELICAN,PENGUIN,PIGEON,PLATYPUS,PORCUPINE,PUFFIN,PUMA".split(","),
 FOOD: "APPLE,APRICOT,ARTICHOKE,ASPARAGUS,AVOCADO,BACON,BAGEL,BANANA,BARLEY,BASIL,BEAN,BEEF,BISCUIT,BLUEBERRY,BREAD,BROCCOLI,BROWNIE,BUTTER,CABBAGE,CAKE,CANDY,CARROT,CASHEW,CELERY,CEREAL,CHEESE,CHERRY,CHICKEN,CHIPS,CHOCOLATE,CINNAMON,CITRUS,COCONUT,COFFEE,COOKIE,CORN,CRACKER,CRANBERRY,CREAM,CUCUMBER,CUPCAKE,CURRY,DATES,DONUT,DUMPLING,EGGPLANT,EGGS,FIG,FLOUR,FRIES,GARLIC,GINGER,GRAPE,GRAPEFRUIT,GRAVY,GUAVA,HAM,HONEY,HUMMUS,KALE,KETCHUP,KIWI,LASAGNA,LEMON,LENTIL,LETTUCE,LIME,MANGO,MAPLE,MARMALADE,MEATBALL,MELON,MILK,MUFFIN,MUSHROOM,MUSTARD,NACHOS,NOODLE,NUTS,OATMEAL,OLIVE,OMELETTE,ONION,ORANGE,OREGANO,PANCAKE,PAPAYA,PASTA,PEACH,PEANUT,PEAR,PEAS,PEPPER,PICKLE,PIE,PINEAPPLE,PISTACHIO,PIZZA,PLUM,POPCORN".split(","),
@@ -693,9 +719,54 @@ WRESTLING: ["STEP IN THE RING", "PIN TO WIN", "BODY SLAM"]
 };
 
 /* ================= engine ================= */
-let SIZE = 15; /* puzzle size: 12, 15 or 20 (Version 4.0) — set by setSize() */
-const MINLEN = 3, MAXLEN = 10; /* v4.0 word-length setting for all sizes */
+let SIZE = 15; /* puzzle size: 12, 15 or 20 (Version 5.0) — set by the setup page */
+const MINLEN = 3, MAXLEN = 10; /* v5.0 word-length setting for all sizes */
 const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+
+/* ---- direction mix (V5.0): desired % of words per direction, set by the player ---- */
+const DIR_KEYS = ["right","down","left","up","diagDR","diagDL","diagUR","diagUL"];
+const DIR_VECTORS = { right:[0,1], down:[1,0], left:[0,-1], up:[-1,0], diagDR:[1,1], diagDL:[1,-1], diagUR:[-1,1], diagUL:[-1,-1] };
+const DIR_ARROWS = { right:"→", down:"↓", left:"←", up:"↑", diagDR:"↘", diagDL:"↙", diagUR:"↗", diagUL:"↖" };
+const DIR_DEFAULT = { right:20, down:20, left:10, up:10, diagDR:10, diagDL:10, diagUR:10, diagUL:10 };
+const DIR_MIX_KEY = "wsDirMix";
+let dirMix = loadDirMix();
+/* V5.0 steering switch: true while building with direction steering;
+   false during the unsteered fallback (see newPuzzle). */
+let steering = true;
+let lastBuildSteered = true; /* true if the last puzzle built with steering on */
+function loadDirMix() {
+  try {
+    const s = JSON.parse(localStorage.getItem(DIR_MIX_KEY));
+    if (s && DIR_KEYS.every(k => typeof s[k] === "number")) return s;
+  } catch (e) {}
+  return { ...DIR_DEFAULT };
+}
+function saveDirMix() { try { localStorage.setItem(DIR_MIX_KEY, JSON.stringify(dirMix)); } catch (e) {} }
+/* Scale any inputs so they sum to 100 (e.g. 50/50/50 becomes 33/33/33). */
+function normMix(m) {
+  const tot = DIR_KEYS.reduce((a, k) => a + Math.max(0, m[k] || 0), 0);
+  if (tot <= 0) return { ...DIR_DEFAULT };
+  const out = {};
+  DIR_KEYS.forEach(k => out[k] = 100 * Math.max(0, m[k] || 0) / tot);
+  return out;
+}
+function dirKeyOf(dr, dc) { return DIR_KEYS.find(k => DIR_VECTORS[k][0] === dr && DIR_VECTORS[k][1] === dc); }
+/* Count placed words per direction, from their cells. */
+function dirCounts(placedList) {
+  const c = {};
+  DIR_KEYS.forEach(k => c[k] = 0);
+  for (const d of placedList) {
+    const [r0, c0] = d.cells[0], [r1, c1] = d.cells[1];
+    c[dirKeyOf(r1 - r0, c1 - c0)]++;
+  }
+  return c;
+}
+/* How far below its desired share a direction currently is, in percentage points. */
+function dirDeficit(dr, dc, counts, total, target) {
+  const key = dirKeyOf(dr, dc);
+  const share = total ? 100 * counts[key] / total : 0;
+  return (target[key] || 0) - share;
+}
 
 let grid = [], placed = [], secretPhrase = "";
 let theme = "ANIMALS", anchor = null, playing = false;
@@ -772,17 +843,39 @@ function tryBuild(pool, phraseLen) {
         if (!done.some(d => d.cells.some(([rr, cc]) => rr === r && cc === c))) g[r][c] = "";
       }
     };
-    // Best placement of word w covering 1..maxNc new cells (early-exit at maxNc).
+    // Pick among candidate placements (V5.0 direction mix): prefer the direction
+    // furthest below its desired share, among placements within DIR_SLACK
+    // of the most new cells — so direction steering never badly hurts packing.
+    const DIR_SLACK = 2;
+    const targetMix = normMix(dirMix); // normalized once per build, not per candidate
+    const pickPlacement = (cands) => {
+      if (!cands.length) return null;
+      if (!steering) {
+        // Unsteered fallback: first placement with the most new cells (V4 behaviour).
+        let best = null, bestNc = -1;
+        for (const c of cands) if (c.nc > bestNc) { bestNc = c.nc; best = c; }
+        return best;
+      }
+      let maxNc = 0;
+      for (const c of cands) if (c.nc > maxNc) maxNc = c.nc;
+      const counts = dirCounts(done), total = done.length;
+      let best = null, bestDef = -Infinity, bestNc = -1;
+      for (const c of cands) {
+        if (c.nc < maxNc - DIR_SLACK) continue;
+        const def = dirDeficit(c.p.dr, c.p.dc, counts, total, targetMix);
+        if (def > bestDef || (def === bestDef && c.nc > bestNc)) { best = c; bestDef = def; bestNc = c.nc; }
+      }
+      return best;
+    };
+    // Best placement of word w covering 1..maxNc new cells.
     const bestPlacement = (w, maxNc) => {
-      let bestP = null, bestNc = -1;
+      const cands = [];
       for (const c of allPlacements(w, g)) {
         const nc = newCellsFor(w, c, g);
-        if (nc >= 1 && nc <= maxNc && nc > bestNc) {
-          bestNc = nc; bestP = c;
-          if (bestNc === maxNc) break;
-        }
+        if (nc >= 1 && nc <= maxNc) cands.push({ p: c, nc });
       }
-      return bestP ? { p: bestP, nc: bestNc } : null;
+      const best = pickPlacement(cands);
+      return best ? { p: best.p, nc: best.nc } : null;
     };
     // Close a remaining gap of `need` new cells with unused words.
     let dfsNodes = 0;
@@ -816,12 +909,13 @@ function tryBuild(pool, phraseLen) {
         if (done.some(d => d.word === w)) continue;
         const e = emptyCount();
         if (e <= phraseLen) break;
-        let bestP = null, bestNc = -1;
+        const cands = [];
         for (const c of allPlacements(w, g)) {
           const nc = newCellsFor(w, c, g);
-          if (nc >= 1 && e - nc >= phraseLen && nc > bestNc) { bestNc = nc; bestP = c; }
+          if (nc >= 1 && e - nc >= phraseLen) cands.push({ p: c, nc });
         }
-        if (bestP) { placeWord(w, bestP); moved = true; }
+        const best = pickPlacement(cands);
+        if (best) { placeWord(w, best.p); moved = true; }
       }
       if (!moved) break;
     }
@@ -1066,7 +1160,39 @@ function phraseSums(theme) {
   }
   return [...sums].filter(v => v >= 14 && v <= 30).sort((a, b) => a - b);
 }
+/* ---- direction-mix panel (V5.0) ---- */
+function syncDirInputs() {
+  DIR_KEYS.forEach(k => { const el = $("dirPct-" + k); if (el) el.value = dirMix[k]; });
+  updateDirTotal();
+}
+function readDirInputs() {
+  DIR_KEYS.forEach(k => {
+    const el = $("dirPct-" + k);
+    if (!el) return;
+    const v = parseFloat(el.value);
+    dirMix[k] = isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
+  });
+  saveDirMix();
+  updateDirTotal();
+}
+function updateDirTotal() {
+  const el = $("dirMixTotal");
+  if (!el) return;
+  const tot = DIR_KEYS.reduce((a, k) => a + (dirMix[k] || 0), 0);
+  el.textContent = tot === 100 ? "Adds to 100%."
+    : "Adds to " + tot + "% — scaled to 100% when building.";
+}
+function updateDirActual() {
+  const el = $("dirMixActual");
+  if (!el) return;
+  if (!placed.length) { el.textContent = ""; return; }
+  const counts = dirCounts(placed), total = placed.length;
+  el.textContent = "This puzzle: " + DIR_KEYS.map(k =>
+    DIR_ARROWS[k] + " " + Math.round(100 * counts[k] / total) + "%").join("  ");
+}
+
 function newPuzzle() {
+  readDirInputs(); // pick up the current direction-mix percentages
   theme = $("themeSel").value;
   const pool = THEMES[theme]
     .filter(w => w.length >= MINLEN && w.length <= MAXLEN)
@@ -1074,7 +1200,7 @@ function newPuzzle() {
     // so one selection can never match two entries in the word list.
     .filter((w, _, a) => !a.some(o => o !== w && o.includes(w)));
   let result = null, phrase = "";
-  // Relaxed hidden content (v2.0/v3.0/v4.0): build a puzzle leaving an exact number of
+  // Relaxed hidden content (v2.0/v3.0/v5.0): build a puzzle leaving an exact number of
   // leftover cells, then compose a fresh hidden message from this theme's own
   // MULTI-WORD phrases only — never single pool words — so the leftover
   // always reads as a phrase. The leftover count is picked from the sums this
@@ -1086,18 +1212,30 @@ function newPuzzle() {
   // vs placed POWDERDAY), so retry with a fresh leftover count and rebuild.
   // Every theme has at least one leftover count composable without its
   // colliding phrase, so retries converge quickly.
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const phraseLen = sums[Math.floor(Math.random() * sums.length)];
-    const built = tryBuild(pool, phraseLen);
-    if (!built) continue;
-    const placedSet = new Set(built.placed.map(p => p.word));
-    const composed = composeFromPhrases(theme, placedSet, phraseLen);
-    if (!composed) continue;
-    result = built; phrase = composed.text; break;
-  }
+  // First try with direction steering; if no steered build succeeds,
+  // fall back to unsteered (pure max-spread, V4 behaviour) builds so
+  // the puzzle still builds — steering is a preference, exact fill
+  // is a hard requirement.
+  steering = true;
+  const tryAttempts = (n) => {
+    for (let attempt = 0; attempt < n; attempt++) {
+      const phraseLen = sums[Math.floor(Math.random() * sums.length)];
+      const built = tryBuild(pool, phraseLen);
+      if (!built) continue;
+      const placedSet = new Set(built.placed.map(p => p.word));
+      const composed = composeFromPhrases(theme, placedSet, phraseLen);
+      if (!composed) continue;
+      result = built; phrase = composed.text; return true;
+    }
+    return false;
+  };
+  tryAttempts(60);
+  if (!result) { steering = false; tryAttempts(60); }
+  lastBuildSteered = steering && !!result;
   if (!result) { setMsg("Could not build a puzzle — try again."); return; }
   grid = result.grid; placed = result.placed; secretPhrase = phrase;
   fillSecret();
+  updateDirActual(); // show this puzzle's actual direction mix
   anchor = null; playing = false;
   $("btnPlay").disabled = false;
   renderBoard(); renderList();
@@ -1107,7 +1245,7 @@ function newPuzzle() {
   if (window.plausible) plausible("puzzle-start");
 }
 
-/* ---- puzzle size (V4.0): 12 / 15 / 20, remembered per device ---- */
+/* ---- puzzle size (V5.0): 12 / 15 / 20, remembered per device ---- */
 const SIZE_KEY = "wsSize";
 function isPhoneScreen() {
   try { return window.matchMedia("(max-width: 700px) and (pointer: coarse)").matches; }
@@ -1119,30 +1257,37 @@ function storedSize() {
     return [12, 15, 20].includes(v) ? v : null;
   } catch (e) { return null; }
 }
-/* Apply a size without starting a puzzle: grid columns, fit layout,
-   picker highlight. */
+/* Apply a size without starting a puzzle: grid columns, fit layout. */
 function applySize(n) {
   SIZE = n;
   document.body.classList.toggle("fit20", n === 20);
   const g = $("grid");
   if (g && g.style && g.style.setProperty) g.style.setProperty("--n", n);
-  document.querySelectorAll(".size-btn").forEach(b =>
-    b.classList.toggle("selected", +b.dataset.size === n));
 }
-/* Pick a size (from the picker): remember it, hide the picker, play. */
-function setSize(n) {
+/* ---- setup page (V5.0): size radios + direction mix + Play Puzzle ---- */
+function setupSize() {
+  const r = document.querySelector('input[name="setupSize"]:checked');
+  const v = r ? parseInt(r.value, 10) : 15;
+  return [12, 15, 20].includes(v) ? v : 15;
+}
+function showSetup() {
+  // Pre-fill: remembered size (or current SIZE) + remembered mix.
+  const n = storedSize() || SIZE;
+  document.querySelectorAll('input[name="setupSize"]').forEach(r => { r.checked = +r.value === n; });
+  syncDirInputs();
+  $("setupPage").classList.remove("hidden");
+}
+function hideSetup() { $("setupPage").classList.add("hidden"); }
+/* Play Puzzle (from the setup page): apply the chosen size and mix,
+   remember the size, hide setup, build a fresh puzzle. */
+function playFromSetup() {
+  let n = setupSize();
   if (isPhoneScreen()) n = 12; // phones get 12x12 only
   try { localStorage.setItem(SIZE_KEY, String(n)); } catch (e) {}
   applySize(n);
-  hideSizePicker();
+  hideSetup();
   newPuzzle();
 }
-/* Phones never see the picker: they go straight into 12x12. */
-function showSizePicker() {
-  if (isPhoneScreen()) return;
-  $("sizePicker").classList.remove("hidden");
-}
-function hideSizePicker() { $("sizePicker").classList.add("hidden"); }
 
 /* ---- wiring ---- */
 $("themeSel").innerHTML = Object.keys(THEMES).map(t =>
@@ -1152,20 +1297,25 @@ $("btnNew").addEventListener("click", newPuzzle);
 $("themeSel").addEventListener("change", newPuzzle);
 $("btnPlay").addEventListener("click", playAll);
 $("btnPrint").addEventListener("click", () => window.print());
-$("btnSize").addEventListener("click", showSizePicker);
-document.querySelectorAll(".size-btn").forEach(b =>
-  b.addEventListener("click", () => setSize(+b.dataset.size)));
-/* Clicking the dimmed background dismisses the picker when a puzzle is
-   already running (so Size can be closed without picking a new size). */
-$("sizePicker").addEventListener("click", (e) => {
-  if (e.target === $("sizePicker") && placed.length > 0) hideSizePicker();
+$("btnSetup").addEventListener("click", showSetup);
+$("btnPlayPuzzle").addEventListener("click", playFromSetup);
+DIR_KEYS.forEach(k => {
+  const el = $("dirPct-" + k);
+  if (el) el.addEventListener("change", readDirInputs);
+});
+syncDirInputs();
+/* Clicking the dimmed background dismisses the setup page when a puzzle
+   is already running (so Setup can be closed without starting a new one). */
+$("setupPage").addEventListener("click", (e) => {
+  if (e.target === $("setupPage") && placed.length > 0) hideSetup();
 });
 
 /* ---- friends-only password gate ---- */
 const FRIEND_PASSWORD = "friends_of_Graham_Lamb"; // change this to your own password
 /* After the password gate: on phones go straight into a 12x12 puzzle (no
-   picker, no Size button); otherwise show the size picker (title screen)
-   with the remembered size pre-selected (15 by default). */
+   setup page at start, but the Setup button is still there for the mix);
+   otherwise show the setup page with the remembered size and mix
+   pre-filled (15x15 and the default mix when nothing is remembered). */
 function startAfterUnlock() {
   $("pwGate").classList.add("hidden");
   if (isPhoneScreen()) {
@@ -1175,7 +1325,7 @@ function startAfterUnlock() {
     return;
   }
   applySize(storedSize() || 15);
-  showSizePicker();
+  showSetup();
 }
 function unlockGame() {
   if ($("pwInput").value === FRIEND_PASSWORD) {
